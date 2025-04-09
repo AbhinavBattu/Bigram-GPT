@@ -3,8 +3,8 @@ import torch.nn as nn
 from torch.nn import functional as F
 
 # hyperparameters
-batch_size = 16 # how many independent sequences will we process in parallel?
-block_size = 16 # what is the maximum context length for predictions?
+batch_size = 16 
+block_size = 16
 max_iters = 5000
 eval_interval = 500
 learning_rate = 1e-3
@@ -18,7 +18,6 @@ dropout=0.2
 
 torch.manual_seed(1337)
 
-# wget https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt
 with open('input.txt', 'r', encoding='utf-8') as f:
     text = f.read()
 
@@ -119,7 +118,6 @@ class Block(nn.Module):
         x=x+self.ffwd(self.ln2(x))
         return x
 
-# super simple bigram model
 class BigramLanguageModel(nn.Module):
 
     def __init__(self):
@@ -170,12 +168,11 @@ class BigramLanguageModel(nn.Module):
 model = BigramLanguageModel()
 m = model.to(device)
 
-# create a PyTorch optimizer
+# Optimizer
 optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
 
 for iter in range(max_iters):
 
-    # every once in a while evaluate the loss on train and val sets
     if iter % eval_interval == 0:
         losses = estimate_loss()
         print(f"step {iter}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
@@ -183,12 +180,11 @@ for iter in range(max_iters):
     # sample a batch of data
     xb, yb = get_batch('train')
 
-    # evaluate the loss
     logits, loss = model(xb, yb)
     optimizer.zero_grad(set_to_none=True)
     loss.backward()
     optimizer.step()
 
-# generate from the model
+# generating text
 context = torch.zeros((1, 1), dtype=torch.long, device=device)
 print(decode(m.generate(context, max_new_tokens=1000)[0].tolist()))
